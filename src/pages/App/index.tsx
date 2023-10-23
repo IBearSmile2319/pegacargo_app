@@ -24,7 +24,7 @@ import {
   Colors,
   Header,
 } from 'react-native/Libraries/NewAppScreen';
-import notifee, { EventType, EventDetail, AndroidImportance } from '@notifee/react-native';
+import notifee, { EventType, EventDetail, AndroidImportance, AuthorizationStatus } from '@notifee/react-native';
 import messaging, { } from '@react-native-firebase/messaging';
 import MapScreen from 'pages/MapScreen';
 import { LocationPermissionsService } from 'services/LocationPermissionsService';
@@ -91,10 +91,24 @@ function App(): JSX.Element {
   //     });
   // }
 
+  async function checkNotificationPermission() {
+    const settings = await notifee.getNotificationSettings();
+  
+    if (settings.authorizationStatus == AuthorizationStatus.AUTHORIZED) {
+      console.log('Notification permissions has been authorized');
+    } else if (settings.authorizationStatus == AuthorizationStatus.DENIED) {
+      console.log('Notification permissions has been denied');
+      // pedir permiso de notificaciones
+      await notifee.requestPermission();
+
+    }
+  }
+
 
   useEffect(() => {
     getToken();
     // handleBackgroundNoti();
+    checkNotificationPermission();
     onDisplayNotification();
     return notifee.onForegroundEvent(({ type, detail }: { type: EventType, detail: EventDetail }) => {
       switch (type) {
